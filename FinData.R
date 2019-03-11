@@ -24,12 +24,12 @@ for(pr in NSE_CODES[1:10,1]){
 index(NSE_CODES[1,1])
 get_KeyRatios=function(){
 NSE500_fund=list()
-NSE_symbols_only=NSE_CODES$Symbol[1:10]
+NSE_symbols_only=NSE_CODES$Symbol[10:20]
 for(t in 1:length(NSE_symbols_only)){
   myticker=paste0("XNSE:",NSE_symbols_only[t])
  
 # Fundamentals 
-str.keyratios<-getURL(url.keyratios(myticker))
+str.keyratios<-getURL(url.keyratios(myticker)); if(length(str.keyratios)!= 0){
 kr.fin <- sub(".*Financials\n(.*)Key Ratios -> Profitability.*","\\1",str.keyratios)
 kr.margins <- sub(".*Key Ratios -> Profitability\n(.*)Profitability.*","\\1",str.keyratios)
 kr.profit <- sub(".*Key Ratios -> Profitability.*(Profitability.*)Key Ratios -> Growth.*","\\1",str.keyratios)
@@ -39,15 +39,16 @@ kr.balance<-sub(".*Key Ratios -> Financial Health\n(Balance Sheet Items.*)Liquid
 kr.liquid<-sub(".*Key Ratios -> Financial Health.*(Liquidity/Financial Health.*)Key Ratios -> Efficiency Ratios.*","\\1",str.keyratios)
 kr.eff<-sub(".*Key Ratios -> Efficiency Ratios\n(.*)","\\1",str.keyratios)
 
-NSE500_fund[[NSE_symbols_only[t]]]["fin"]= read.csv(textConnection(kr.fin))
-NSE500_fund[[NSE_symbols_only[t]]]["margins"]= read.csv(textConnection(kr.margins))
-NSE500_fund[[NSE_symbols_only[t]]]["profit"]= read.csv(textConnection(kr.profit))
-NSE500_fund[[NSE_symbols_only[t]]]["growth"]= read.csv(textConnection(kr.growth))
-NSE500_fund[[NSE_symbols_only[t]]]["cashflow"]= read.csv(textConnection(kr.cashflow))
-NSE500_fund[[NSE_symbols_only[t]]]["balance"]= read.csv(textConnection(kr.balance))
-NSE500_fund[[NSE_symbols_only[t]]]["liquid"]= read.csv(textConnection(kr.liquid))
-NSE500_fund[[NSE_symbols_only[t]]]["eff"]= read.csv(textConnection(kr.eff))
-  
+NSE500_fund[[NSE_symbols_only[t]]][["fin"]]= data.frame(read.csv(textConnection(kr.fin),stringsAsFactors = FALSE))
+NSE500_fund[[NSE_symbols_only[t]]][["margins"]]= read.csv(textConnection(kr.margins))
+NSE500_fund[[NSE_symbols_only[t]]][["profit"]]= read.csv(textConnection(kr.profit))
+NSE500_fund[[NSE_symbols_only[t]]][["growth"]]= read.csv(textConnection(kr.growth))
+NSE500_fund[[NSE_symbols_only[t]]][["cashflow"]]= read.csv(textConnection(kr.cashflow))
+NSE500_fund[[NSE_symbols_only[t]]][["balance"]]= read.csv(textConnection(kr.balance))
+NSE500_fund[[NSE_symbols_only[t]]][["liquid"]]= read.csv(textConnection(kr.liquid))
+NSE500_fund[[NSE_symbols_only[t]]][["eff"]]= read.csv(textConnection(kr.eff))
+}
+Sys.sleep(10)
 }
 return(NSE500_fund)
 }
