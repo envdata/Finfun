@@ -55,7 +55,7 @@ return(NSE500_fund)
 }
 
 
-https://financials.morningstar.com/finan/ajax/exportKR2CSV.html?&callback=?&t=0P0000BP80&region=ind&culture=en-US&version=SAL&cur=&order=asc
+
 
 si=html_session("https://www.screener.in/company/3MINDIA/")
 url="https://www.screener.in/company/3MINDIA/"
