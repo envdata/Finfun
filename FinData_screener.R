@@ -4,7 +4,7 @@ require(RCurl)
 require(jsonlite)
 library(rvest)
 library(httr)
-
+library(lubridate)
 
 
 url.screener<-"https://www.screener.in/company/"
@@ -69,9 +69,65 @@ t[1:12,1:13]= as.numeric(t[1:12,1:13])
 
 tt<- transform(t, t[1:12,] = as.numeric(t[1:12,]))
 
-as.numeric(t[1,1])
 
-tt=data.frame(lapply(t, function(x) { gsub("%","",gsub(",","",x))}))
+
+row_names_pl <- rownames(table_incomestat)
+row_names_bal<- rownames(table_balstat)
+row_names_cf <- rownames(table_cashflowstat)
+
+count_years=function(table){
+  col_count=ncol(table)
+  years_count=col_count-1
+  count_years_table=seq(year(Sys.Date())-(years_count-1),year(Sys.Date()))
+  return(count_years_table)
+}
+
+transform_table=function(table){
+  table_before=table
+  row_names=table_before[1:12,1]
+  table_before=data.frame(lapply(table_before, function(x) { as.numeric(as.character(gsub("%","",gsub(",","",x))))}))
+  table_after=data.frame(t(table_before)); table_after=table_after[-1,];
+  colnames(table_after)=row_names
+  rownames(table_after)=count_years(table_before)
+  return(table_after[-1,])
+}
+#test
+test_transform=transform_table(test_inc)
+
+plot(tt[1,])
+
+
+
+plot(tt[[1]])
+
+
+## pull fin statements ##
+
+get_incomestat=function(myticker,url){
+    table_incomestat[[myticker]]=url %>% #pipeline
+    read_html() %>%
+    html_nodes(xpath='//*[@id="profit-loss"]/div[1]/table')%>%
+    html_table(.,fill=TRUE)
+  return(data.frame(table_incomestat))
+}
+myticker="ADANIPORTS"
+test_inc=get_incomestat(myticker,url)
+
+get_cashflow=function(myticker,url.screener){
+  table_cashflowstat[[myticker]]= url %>%   #pipeline
+    read_html() %>>%
+    html_nodes(xpath='//*[@id="cash-flow"]/div/table') %>>%
+    html_table(.,fill=TRUE)
+  return(data.frmae(table_cashflowstat))
+}
+
+get_balsheet=function(myticker,url){
+  table_balstat[[myticker]]= url %>%  #pipeline
+    read_html() %>>%
+    html_nodes(xpath='//*[@id="balance-sheet"]/div/table') %>>%
+    html_table(.,fill=TRUE)
+  return(data.frame(table_balstat))
+}
 
 
 #Retrieve historical prices
