@@ -129,6 +129,23 @@ get_balsheet=function(myticker,url){
   return(data.frame(table_balstat))
 }
 
+plot_table=function(table){
+  print(names(table))
+  var= readline(prompt="Plot variables")
+  var=as.character(var)
+  dates=year(as.Date(rownames(table), format="%Y"))
+  if(names(table)[1]=="Sales"){table_name <- "Income Statement"} else if (names(table)[1]=="Share Capital") {table_name <- "Bal Sheet"}
+                                                                          else {table_name <- "Cash Flow"}
+  y_var=table[var]
+  ini_chart<- ggplot(table, aes(x=dates)) +geom_line(aes(y=table[var]))+
+  labs(title <- paste(table_name,var), y= var)+ scale_x_continuous()+ theme(panel.grid.minor = element_blank())
+  return(ini_chart)
+}
+
+dates=year(as.Date(rownames(test_transform), format="%Y")) ; y=test_transform[x]; table_name="Income Stat"
+test_chart<- ggplot( aes(x=dates)) +geom_line(aes(y=y))+
+  labs(title <- paste(table_name,x), y= y)+ scale_x_continuous(expand=c(0,0))+ theme(panel.grid.minor = element_blank())
+test_chart
 
 #Retrieve historical prices
 json.histprice<-getURL(url.histprice(myticker))
