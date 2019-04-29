@@ -71,10 +71,12 @@ count_years=function(table){
   col_count=ncol(table)
   years_count=col_count-1
   count_char= nchar(colnames(table)[ncol(table)])
-  extract_year= as.numeric(substring(colnames(test_cashflow)[ncol(test_cashflow)],check_char-3, check_char))
-  if(extract_year== (year(Sys.Date())-1)){
-    count_years_table=seq(year(Sys.Date())-(years_count),year(Sys.Date())-1)
-  } else count_years_table=seq(year(Sys.Date())-(years_count-1),year(Sys.Date()))
+  extract_year= as.numeric(substring(colnames(test_cashflow)[ncol(test_cashflow)],count_char-3, count_char)); 
+  if(is.na(extract_year) == FALSE){
+    count_years_table=seq((extract_year-years_count+1),extract_year)
+  } else 
+    { count_years_table=seq(year(Sys.Date())-(years_count-1),year(Sys.Date()))
+    }
   #if(table[1,1] == "Sales")
         return(count_years_table)
 } # used to count #years in the table --used in transform_table()
@@ -84,9 +86,9 @@ transform_table=function(table){
   row_names=table_before[,1]
   table_before=data.frame(lapply(table_before, function(x) { as.numeric(as.character(gsub("%","",gsub(",","",x))))}))
   table_after=data.frame(t(table_before)); table_after=table_after[-1,];
-  colnames(table_after)=row_names
-  rownames(table_after)=count_years(table)
-  return(table_after[-1,])
+  colnames(table_after) <- row_names
+  rownames(table_after) <- count_years(table)
+  return(table_after)
 } # transform table - columns = parameters; rows= years; rownames =years
 
 #test
@@ -96,11 +98,12 @@ test_transform=transform_table(test_inc)
 ## pull fin statements ##
 
 get_incomestat=function(myticker,url){
-    table_incomestat[[myticker]]=url %>% #pipeline
+  table_incomestat=list()  
+  table_incomestat[[myticker]]=url %>% #pipeline
     read_html() %>%
     html_nodes(xpath='//*[@id="profit-loss"]/div[1]/table')%>%
     html_table(.,fill=TRUE)
-  return(transform_table(data.frame(table_incomestat)))
+  return(data.frame(table_incomestat))
 }
 myticker="ADANIPORTS"
 test_inc=get_incomestat(myticker,url)
@@ -125,7 +128,7 @@ get_balsheet=function(myticker,url){
   return(transform_table(data.frame(table_balstat))) 
 }
 
-plot_table=function(table)
+plot_table=function(table,myticker)
   {
   print(names(table))
   var= readline(prompt="Plot variables")
@@ -134,14 +137,14 @@ plot_table=function(table)
   if(names(table)[1]=="Sales"){table_name <- "Income Statement"} else if (names(table)[1]=="Share Capital") {table_name <- "Bal Sheet"}
                                                                         else {table_name <- "Cash Flow"}
   y_var=table[[var]]; print(table_name)
-  ini_chart<- ggplot(table, aes(x=dates)) +geom_line(aes(y=y_var), size=1)+
-  labs(title = paste(table_name,"-",var), y= var)+ theme(panel.grid.minor = element_blank())
+  ini_chart<- ggplot(table, aes(x=dates,y=y_var)) +geom_line(color="red",size=1)+ geom_point(size=2)+ 
+  labs(title = myticker, subtitle = paste(table_name,"-",var), y= var, x="Years")+ theme(panel.grid.minor = element_blank())
   return(ini_chart)
   }
 
 dates <- as.Date(rownames(test_transform), format="%Y") ; y=test_transform[[x]]; table_name="Income Stat"
-test_chart<- ggplot(test_transform,aes(x=dates)) +geom_line(aes(y=y), size=1)+
-  labs(title = paste(table_name,x), y= "Sales" )+  theme(panel.grid.minor = element_blank())
+test_chart<- ggplot(test_transform,aes(x=dates)) +geom_line(aes(y=y), size=2)+
+  labs(title = paste(table_name,x), y= "Sales", x="Years" )+  theme(panel.grid.minor = element_blank())
 test_chart
 
 #Retrieve historical prices
