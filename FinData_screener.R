@@ -59,6 +59,7 @@ for(t in 1:length(NSE_symbols_only)){
   bal_sheet=get_balsheet()
   }
 
+url=paste0(url.screener, myticker)
 
 count_years=function(table){
   col_count=ncol(table)
@@ -85,51 +86,61 @@ transform_table=function(table){
 #test
 test_transform=transform_table(test_inc)
 
+pull_url <- function(myticker){
+  
+  url.screener<-"https://www.screener.in/company/"
+  url=paste0(url.screener, myticker)
+  return(url)
+  }
 
 ## pull fin statements ##
 
-get_incomestat=function(myticker,url){
+get_incomestat=function(myticker){
+    url=pull_url(myticker)
+    table_incomestat=list()
     table_incomestat[[myticker]]=url %>% #pipeline
     read_html() %>%
     html_nodes(xpath='//*[@id="profit-loss"]/div[1]/table')%>%
     html_table(.,fill=TRUE)
   return(transform_table(data.frame(table_incomestat)))
-}
-myticker="ADANIPORTS"
+} # get income statement 
+myticker="3MINDIA"
 test_inc=get_incomestat(myticker,url)
 
 get_cashflow=function(myticker,url){
+  url=pull_url(myticker)
   table_cashflowstat=list()
   table_cashflowstat[[myticker]]= url %>%   #pipeline
     read_html() %>%
     html_nodes(xpath='//*[@id="cash-flow"]/div/table') %>%
     html_table(.,fill=TRUE)
-  return(data.frame(table_cashflowstat))
-}
+  return(transform_table(data.frame(table_cashflowstat)))
+} # get cashdlow data # Op, inv and fin cash flows only 
 myticker="ADANIPORTS"
 test_cashflow=get_cashflow(myticker,url)
 test_transform_cashflow=transform_table(test_cashflow)
 
 get_balsheet=function(myticker,url){
+  url=pull_url(myticker)
   table_balstat=list()
   table_balstat[[myticker]]= url %>%  #pipeline
     read_html() %>%
     html_nodes(xpath='//*[@id="balance-sheet"]/div/table') %>%
     html_table(.,fill=TRUE)
   return(transform_table(data.frame(table_balstat))) 
-}
+} # get balancesheet data 
 
-plot_table=function(table)# Simple Plots - with user inpur - give variable name 
+plot_table=function(table)# Simple Plots - with user input - give variable name 
   {
   print(names(table))
   var= readline(prompt="Plot variables")
   var=as.character(var)
-  dates <- as.Date(rownames(table), format="%Y", origin="1970-01-01")
+  dates <- year(as.Date(rownames(table), format="%Y", origin="1970-01-01"))
   if(names(table)[1]=="Sales"){table_name <- "Income Statement"} else if (names(table)[1]=="Share Capital") {table_name <- "Bal Sheet"}
                                                                         else {table_name <- "Cash Flow"}
   y_var=table[[var]]; print(table_name)
   ini_chart<- ggplot(table, aes(x=dates)) +geom_line(aes(y=y_var), size=1)+ geom_point(aes(y=y_var),size=2, color="red")+
-  labs(title=myticker, subtitle = paste(table_name,"-",var), y= var)+ theme(panel.grid.minor = element_blank())
+  labs(title=myticker, subtitle = paste(table_name,"-",var), y= var)+scale_x_continuous(breaks= seq(min(dates),max(dates),1))+ theme(panel.grid.minor = element_blank())
   return(ini_chart)
   }  
 
