@@ -138,11 +138,12 @@ get_balsheet=function(myticker,url){
   return(transform_table(data.frame(table_balstat))) 
 } # get balancesheet data 
 
+# Plot variables for a particulat fin statement 
 plot_table=function(table)# Simple Plots - with user input - give variable name 
   {
   require(ggplot2)
-  print(names(table))
-  var= readline(prompt="Plot variables")
+  print(names(table)) #Display all columns 
+  var= readline(prompt="Plot variables") # Enter variable to plot 
   var=as.character(var)
   dates <- year(as.Date(rownames(table), format="%Y", origin="1970-01-01"))
   if(names(table)[1]=="Sales"){table_name <- "Income Statement"} else if (names(table)[1]=="Share Capital") {table_name <- "Bal Sheet"}
