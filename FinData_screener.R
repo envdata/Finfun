@@ -62,7 +62,6 @@ for(t in 1:length(NSE_symbols_only)){
 url=paste0(url.screener, myticker)
 
 count_years <- function(table){
-  table <- data.frame(test_inc)
   col_count <- ncol(table)
   years_count <- col_count-1
   count_char <-  nchar(colnames(table)[ncol(table)]); 
@@ -73,7 +72,7 @@ count_years <- function(table){
     } else { 
       count_char <-  nchar(colnames(table)[ncol(table)-1]); 
       extract_year <- as.numeric((substring(colnames(table)[ncol(table)-1],count_char-3, count_char)))
-  
+    }
   if(extract_year== (year(Sys.Date())-1)){
     count_years_table <- seq(year(Sys.Date())-(years_count),year(Sys.Date())-1)
   } else count_years_table <- seq(year(Sys.Date())-(years_count-1),year(Sys.Date()))
@@ -110,8 +109,8 @@ get_incomestat=function(myticker){
     read_html() %>%
     html_nodes(xpath='//*[@id="profit-loss"]/div[1]/table')%>%
     html_table(.,fill=TRUE)
-  return(table_incomestat)
-    #return(transform_table(data.frame(table_incomestat)))
+    #return(table_incomestat)
+    return(transform_table(data.frame(table_incomestat)))
 } # get income statement 
 myticker="3MINDIA"
 test_inc=get_incomestat(myticker)
@@ -141,6 +140,7 @@ get_balsheet=function(myticker,url){
 
 plot_table=function(table)# Simple Plots - with user input - give variable name 
   {
+  require(ggplot2)
   print(names(table))
   var= readline(prompt="Plot variables")
   var=as.character(var)
