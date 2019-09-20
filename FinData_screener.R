@@ -14,7 +14,7 @@ NSE_CODES=read.csv("C:/Users/ashivkumar/Documents/temp/Finfun/NSE_Codes.csv",hea
 NSE_symbols_only=NSE_CODES$Symbol[1:10]
 #colnames(NSE_CODES)=c("Codes","Company")
 
-
+###################################may want to remove##############
 get_incomestat=function(){
 NSE500_fund=list()
 NSE_symbols_only=NSE_CODES$Symbol[10:20]
@@ -46,7 +46,7 @@ Sys.sleep(10)
 }
 return(NSE500_fund)
 }
-
+####################################
 
 
 
