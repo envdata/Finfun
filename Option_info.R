@@ -8,7 +8,7 @@ library(jsonlite)
 library(lubridate)
 library(robotstxt)
 library(dplyr)
-
+library(ggplot2)
 #Check for permissions
 
 paths_allowed(paths=c("https://www.nseindia.com/live_market/dynaContent/live_watch/option_chain/optionKeys.jsp?symbolCode=-10000&symbol=NIFTY&symbol=NIFTY&instrument=-&date=-&segmentLink=17&symbolCount=2&segmentLink=17"))
@@ -27,6 +27,7 @@ option_table <-  test.url %>%
 
 #Split calls and puts and transform data for analysis 
 split_and_transform = function(option_table){
+  table_rows=nrow(option_table[[1]])
   option_call_only=option_table[[1]][names(option_table[[1]]) == "CALLS"] #just calls
   colnames(option_call_only)=option_call_only[1,]
   option_call_only <-  option_call_only[-1,-1]
@@ -46,9 +47,11 @@ split_and_transform = function(option_table){
   colnames(option_put_only) <-  colnames(option_call_only)
   
   #combine calls and puts
-  option_call_only$'Strike' <- option_table[[1]][[12]][2:81]
+  option_call_only$'Strike' <- option_table[[1]][[12]][2:table_rows]
   option_transform_tbl <-  cbind(option_call_only,option_put_only)
+  return(option_transform_tbl)
 
 }
 
+plot(option_transform_tbl$IV,option_transform_tbl$Strike)
 
