@@ -26,7 +26,7 @@ option_table <-  test.url %>%
 
 
 #Split calls and puts and transform data for analysis 
-split_and_transform = function(option_table){
+split_and_transform <-  function(option_table){
   table_rows=nrow(option_table[[1]])
   option_call_only=option_table[[1]][names(option_table[[1]]) == "CALLS"] #just calls
   colnames(option_call_only)=option_call_only[1,]
@@ -54,4 +54,45 @@ split_and_transform = function(option_table){
 }
 
 plot(option_transform_tbl$IV,option_transform_tbl$Strike)
+
+
+##Modified Kelly criterian 
+## Calculate drawdown/max loss 
+
+
+kelly <- function(odds,win,loss,stake){
+  
+}
+
+### Side tracked - kelly criteria simulation
+
+trials <- 1000 
+periods <-100 # 100 periods (time steps) per simulation
+win <- 0.6 # probablity of gain
+gain <- 0.2 # gain % if win
+loss <- -0.2 # loss % if not win
+fractions <- seq(0.2,2,0.2)
+
+
+
+set.seed(100)
+wealth <- array(data=0, dim = c(trials, length(fractions), periods))
+wealth[,,1]=1 # wealth in period 1 is 1
+
+for(trial in 1:trials){
+  outcome <- rbinom(n=periods, size=1, prob=win)
+  returns <- ifelse(outcome,gain,loss)
+  
+  for( j in 2:length(fractions)){
+    for(k in 1:periods){
+    wealth[trial,j,k] <- wealth[trial,j,k] * (1+returns)
+    }
+  }
+  
+}
+
+
+
+
+
 
