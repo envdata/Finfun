@@ -47,14 +47,22 @@ split_and_transform <-  function(option_table){
   colnames(option_put_only) <-  colnames(option_call_only)
   
   #combine calls and puts
-  option_call_only$'Strike' <- option_table[[1]][[12]][2:table_rows]
+  option_call_only$'Strike' <- as.numeric(option_table[[1]][[12]][2:table_rows])
   option_transform_tbl <-  cbind(option_call_only,option_put_only)
   return(option_transform_tbl)
 
 }
 
-plot(option_transform_tbl$IV,option_transform_tbl$Strike)
+plot(option_transform_tbl$OI,option_transform_tbl$Strike)
 
+most_traded <- cal_quantile(option_transform_tbl$Strike)
+option_plot <- ggplot(data = option_transform_tbl[option_transform_tbl$Strike[option_transform_tbl$Strike < most_traded[[2]]] > most_traded[[1]], 1:12]
+                      ,aes(x=Strike , y=LTP)) +geom_line()
+option_plot
+
+cal_quantile <- function(data){
+  return(quantile(data, probs = c(0.50,0.75), na.rm = TRUE))
+}
 
 ##Modified Kelly criterian 
 ## Calculate drawdown/max loss 
@@ -73,8 +81,6 @@ gain <- 0.2 # gain % if win
 loss <- -0.2 # loss % if not win
 fractions <- seq(0.2,2,0.2)
 
-
-
 set.seed(100)
 wealth <- array(data=0, dim = c(trials, length(fractions), periods))
 wealth[,,1]=1 # wealth in period 1 is 1
@@ -83,15 +89,16 @@ for(trial in 1:trials){
   outcome <- rbinom(n=periods, size=1, prob=win)
   returns <- ifelse(outcome,gain,loss)
   
-  for( j in 2:length(fractions)){
-    for(k in 1:periods){
-    wealth[trial,j,k] <- wealth[trial,j,k] * (1+returns)
+  for( j in 2:length(returns)){
+    for(k in 1:length(fractions)){
+      bet <- fractions[k]
+    wealth[trial,k,j] <- wealth[trial,k,j-1] * (1+ bet * returns[j])
     }
   }
   
 }
 
-
+### end of kelly simulation
 
 
 
