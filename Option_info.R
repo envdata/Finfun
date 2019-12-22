@@ -2,6 +2,7 @@
 
 
 #libraries 
+library(stringr)
 library(rvest)
 library(httr)
 library(jsonlite)
@@ -9,6 +10,7 @@ library(lubridate)
 library(robotstxt)
 library(dplyr)
 library(ggplot2)
+library(RQuantLib)
 #Check for permissions
 
 paths_allowed(paths=c("https://www.nseindia.com/live_market/dynaContent/live_watch/option_chain/optionKeys.jsp?symbolCode=-10000&symbol=NIFTY&symbol=NIFTY&instrument=-&date=-&segmentLink=17&symbolCount=2&segmentLink=17"))
@@ -53,6 +55,11 @@ split_and_transform <-  function(option_table){
 
 }
 
+## select the options that are x percentile above annd below current price; to avoid too OTM options
+cal_quantile <- function(data){
+  return(quantile(data, probs = c(0.50,0.75), na.rm = TRUE))
+}
+
 plot(option_transform_tbl$OI,option_transform_tbl$Strike)
 
 most_traded <- cal_quantile(option_transform_tbl$Strike)
@@ -60,13 +67,11 @@ option_plot <- ggplot(data = option_transform_tbl[option_transform_tbl$Strike[op
                       ,aes(x=Strike , y=LTP)) +geom_line()
 option_plot
 
-cal_quantile <- function(data){
-  return(quantile(data, probs = c(0.50,0.75), na.rm = TRUE))
-}
 
-##Modified Kelly criterian 
+
+## Modified Kelly criterian 
 ## Calculate drawdown/max loss 
-
+{
 
 kelly <- function(odds,win,loss,stake){
   
@@ -97,8 +102,27 @@ for(trial in 1:trials){
   }
   
 }
+}
 
-### end of kelly simulation
+## end of kelly simulation
+
+
+## Black Scholes model to calculate greeks [ package: RQuantLib]
+
+current_price <- test.url %>% # Get current underlying price
+  read_html() %>%
+  html_nodes(xpath='//*[@id="wrapper_btm"]/table[1]') %>%
+  html_table(.,fill=TRUE)
+current_price <- as.numeric(substring(current_price[[1]][2],25,32))
+  
+# Get option value and greeks for an option 
+
+option_result <- AmericanOption(option_type, current_price, )
+
+
+
+
+
 
 
 
