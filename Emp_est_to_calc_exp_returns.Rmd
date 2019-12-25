@@ -1,0 +1,62 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+```{r}
+# Emperical probablity distribution for stocks/indexes 
+# using microsoft for example 
+# packages : tidyquant (includes quantmod)
+
+library(tidyquant)
+library(ggplot2)
+
+getSymbols("MSFT", from= '2005-01-01', auto.assign = TRUE)
+
+price_msft <- data.frame(MSFT)
+
+price_msft$Date <- rownames(price_msft) # replace rownames and create Date column
+rownames(price_msft) <- NULL
+
+price_msft$daily[2:nrow(price_msft)] <-  log(price_msft$MSFT.Adjusted[1:(nrow(price_msft)-1)]/price_msft$MSFT.Adjusted[2:(nrow(price_msft))])
+
+price_msft$Date <- as.Date(price_msft$Date)
+price_msft %>%
+  ggplot(aes(x = Date, y= daily*100)) + geom_point()
+
+```
+```{r}
+std_daily_msft <- sd(price_msft$daily[2:nrow((price_msft)-1)])
+
+range(price_msft$daily[2:nrow(price_msft)])
+
+msft_pdf_plot <- ggplot(price_msft,aes(daily)) + geom_density()  
+
+nrml_plot <-  ggplot(data= data.frame(x= rnorm(nrow(price_msft))), aes(x)) + geom_density()
+
+nrml_plot <-  ggplot(data = data.frame(x = c(-0.175, 0.175)), aes(x)) +
+  stat_function(fun = dnorm, n = nrow(price_msft), args = list(mean = 0, sd = 1)) + ylab("") 
+msft_pdf_plot + nrml_plot
+
+
+combine_plot_data <-  data.frame( returns = c(price_msft$daily[2:nrow(price_msft)]*100, rnorm((nrow(price_msft)-1)))
+                                  , type = rep(c("Emperical","Theoritical"), each = (nrow(price_msft)-1)))
+
+combine_plot <-  ggplot(combine_plot_data, aes(x =returns, fill = type )) + geom_density(alpha = 0.5)
+combine_plot
+```
+
