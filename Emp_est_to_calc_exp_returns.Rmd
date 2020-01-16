@@ -25,14 +25,15 @@ The preview shows you a rendered HTML copy of the contents of the editor. Conseq
 library(tidyquant)
 library(ggplot2)
 
-getSymbols("MSFT", from= '2005-01-01', auto.assign = TRUE)
+getSymbols("AMD", from= '2005-01-01', auto.assign = TRUE)
 
-price_msft <- data.frame(MSFT)
+price_msft <- data.frame(AMD)
 
 price_msft$Date <- rownames(price_msft) # replace rownames and create Date column
 rownames(price_msft) <- NULL
 
-price_msft$daily[2:nrow(price_msft)] <-  log(price_msft$MSFT.Adjusted[1:(nrow(price_msft)-1)]/price_msft$MSFT.Adjusted[2:(nrow(price_msft))])
+price_msft$daily = 0
+price_msft$daily[2:nrow(price_msft)] <-  log(price_msft$AMD.Adjusted[1:(nrow(price_msft)-1)]/price_msft$AMD.Adjusted[2:(nrow(price_msft))])
 
 price_msft$Date <- as.Date(price_msft$Date)
 price_msft %>%
@@ -48,7 +49,7 @@ msft_pdf_plot <- ggplot(price_msft,aes(daily)) + geom_density()
 
 nrml_plot <-  ggplot(data= data.frame(x= rnorm(nrow(price_msft))), aes(x)) + geom_density()
 
-nrml_plot <-  ggplot(data = data.frame(x = c(-0.175, 0.175)), aes(x)) +
+nrml_plot <-  ggplot(data = data.frame(x = c(-0.4, 0.4)), aes(x)) +
   stat_function(fun = dnorm, n = nrow(price_msft), args = list(mean = 0, sd = 1)) + ylab("") 
 msft_pdf_plot + nrml_plot
 
