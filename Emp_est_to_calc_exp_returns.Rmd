@@ -25,18 +25,19 @@ The preview shows you a rendered HTML copy of the contents of the editor. Conseq
 library(tidyquant)
 library(ggplot2)
 
-getSymbols("AMD", from= '2005-01-01', auto.assign = TRUE)
-
-price_msft <- data.frame(AMD)
-
-price_msft$Date <- rownames(price_msft) # replace rownames and create Date column
-rownames(price_msft) <- NULL
-
-price_msft$daily = 0
-price_msft$daily[2:nrow(price_msft)] <-  log(price_msft$AMD.Adjusted[1:(nrow(price_msft)-1)]/price_msft$AMD.Adjusted[2:(nrow(price_msft))])
-
-price_msft$Date <- as.Date(price_msft$Date)
-price_msft %>%
+get_daily_returns=function(symbol){
+  print(as.character(symbol))
+  price_daily <- data.frame(getSymbols(symbol, from= '2005-01-01', auto.assign = FALSE))
+  price_daily$Date <- rownames(price_daily) # replace rownames and create Date column
+  colnames(price_daily) <- c("Open", "High", "Low", "Close", "Volume", "Adjusted", "Date")
+  rownames(price_daily) <- NULL
+  price_daily$daily <- 0
+  price_daily$daily[2:nrow(price_daily)] <-  log(price_daily$Adjusted[1:(nrow(price_daily)-1)]/price_daily$Adjusted[2:(nrow(price_daily))])
+  return(price_daily)
+  
+}
+price_daily$Date <- as.Date(price_daily$Date)
+  price_daily %>%
   ggplot(aes(x = Date, y= daily*100)) + geom_point()
 
 ```
