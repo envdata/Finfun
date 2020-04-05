@@ -25,23 +25,54 @@ The preview shows you a rendered HTML copy of the contents of the editor. Conseq
 library(tidyquant)
 library(ggplot2)
 
-get_daily_returns=function(symbol){
-  print(as.character(symbol))
-  price_daily <- data.frame(getSymbols(symbol, from= '2005-01-01', auto.assign = FALSE))
+get_daily_returns <- function(){
+  symbol <-  readline(prompt="Enter Symbol")
+  #symbol <- deparse(substitute(symbol)) ##deprecated becasue changed function argto NULL and added user input as string
+  price_daily <- data.frame(getSymbols(symbol, from= '2010-01-01', auto.assign = FALSE, src='yahoo'))
   price_daily$Date <- rownames(price_daily) # replace rownames and create Date column
-  colnames(price_daily) <- c("Open", "High", "Low", "Close", "Volume", "Adjusted", "Date")
+  price_daily$symbol <- symbol
+  colnames(price_daily) <- c("Open", "High", "Low", "Close", "Volume", "Adjusted", "Date","Symbol")
   rownames(price_daily) <- NULL
+  
   price_daily$daily <- 0
   price_daily$daily[2:nrow(price_daily)] <-  log(price_daily$Adjusted[1:(nrow(price_daily)-1)]/price_daily$Adjusted[2:(nrow(price_daily))])
+  price_daily$Date <- as.Date(price_daily$Date)
+ 
+  print(ggplot(price_daily, aes(x = Date, y= daily*100)) + geom_point())
   return(price_daily)
-  
-}
+  }
 price_daily$Date <- as.Date(price_daily$Date)
   price_daily %>%
   ggplot(aes(x = Date, y= daily*100)) + geom_point()
 
 ```
+
+
+
+
 ```{r}
+
+compare_emperical <- function(price_daily){
+  std_daily <- sd(price_daily$daily[2:(nrow(price_daily)-1)], na.rm=TRUE)
+  range <-  range(price_daily$daily[2:(nrow(price_daily)-1)])
+  
+  combine_plot_data <-  data.frame( returns = c(price_daily$daily[2:nrow(price_daily)]*100, rnorm((nrow(price_daily)-1)))
+                                    , type = rep(c("Emperical","Theoritical"), each = (nrow(price_daily)-1)))
+  
+  #density_returns <- density(price_daily$daily)
+  #superimpose_sd <- data.frame(x= c(std_daily,std_daily * -1), y=c(max(density_returns$y),max(density_returns$y)))
+ 
+   combine_plot <-  ggplot(combine_plot_data, aes(x =returns, fill = type )) + geom_density(alpha = 0.3) + ggtitle(price_daily$Symbol[1])
+   return_list = list(combine_plot, std = std_daily*100)
+  return(return_list)
+}
+
+get_probablity <-  function(start_vale, end_value, eval_points, price_daily){
+  n = readlines(prompt="# of eval_points should be a power of 2; recommended = 512")
+  n = eval_points
+  k_density <- density(price_daily$daily, n=1024)
+  integrate()
+}
 std_daily_msft <- sd(price_msft$daily[2:nrow((price_msft)-1)])
 
 range(price_msft$daily[2:nrow(price_msft)])
@@ -54,11 +85,5 @@ nrml_plot <-  ggplot(data = data.frame(x = c(-0.4, 0.4)), aes(x)) +
   stat_function(fun = dnorm, n = nrow(price_msft), args = list(mean = 0, sd = 1)) + ylab("") 
 msft_pdf_plot + nrml_plot
 
-
-combine_plot_data <-  data.frame( returns = c(price_msft$daily[2:nrow(price_msft)]*100, rnorm((nrow(price_msft)-1)))
-                                  , type = rep(c("Emperical","Theoritical"), each = (nrow(price_msft)-1)))
-
-combine_plot <-  ggplot(combine_plot_data, aes(x =returns, fill = type )) + geom_density(alpha = 0.5)
-combine_plot
 ```
 
